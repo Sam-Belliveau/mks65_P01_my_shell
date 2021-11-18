@@ -20,17 +20,14 @@ struct shell_command* shell_command_create(char *user_line)
             size = i - user_line;
             
             // Get rid of empty space
-            // if(size == 0) 
-            // {
-            //     ++user_line;
-            //     break;
-            // }
-            
-            // Copy buffer into command
-            buf = calloc(size + 1, sizeof(char));
-            strncpy(buf, user_line, size);
-            command->argv[command->argc++] = buf;
-            
+            if(size != 0) 
+            {    
+                // Copy buffer into command
+                buf = calloc(size + 1, sizeof(char));
+                strncpy(buf, user_line, size);
+                command->argv[command->argc++] = buf;
+            }
+
             // Based on type of delimiter, handle it differently
             if(*i == SH_DELIMITER)
             {
