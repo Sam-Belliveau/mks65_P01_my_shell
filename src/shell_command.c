@@ -2,46 +2,52 @@
 
 struct shell_command* shell_command_create(char *user_line)
 {
-    int size, j;
-    char* i;
-    char* buf;
-    struct shell_command* command = malloc(sizeof(struct shell_command));
+    int size;
+    char* i, buf;
+    struct shell_command* command = calloc(1, sizeof(struct shell_command));
     
     command->argc = 0;
     command->next_command = NULL;
 
-    for(j = 0; j < SH_MAX_ARGS; ++j) command->argv[j] = NULL;
-
-    while(*user_line)
+    for(i = user_line; *user_line; ++i)
     {
-        for(i = user_line;; ++i)
+        if(*i == SH_SPACE 
+        || *i == SH_DELIMITER 
+        || *i == SH_COMMAND_END 
+        || *i == '\0')
         {
-            if(*i == SH_SPACE || *i == SH_DELIMITER || *i == SH_COMMAND_END)
+            size = i - user_line;
+            buf = calloc(size + 1, sizeof(char));
+            strncpy(buf, user_line, size);
+            command->argv[command->argc++] = buf;
+            
+            if(*i == SH_DELIMITER)
             {
-                size = i - user_line;
-                buf = calloc(size + 1, sizeof(char));
-                strlcpy(buf, user_line, size);
-                command->argv[command->argc++] = buf;
-                
-                if(*i == SH_DELIMITER)
-                {
-                    command->next_command = shell_command_create(i + 1);
-                    return command;
-                }
-
-                else if(*i == SH_COMMAND_END)
-                {
-                    command->next_command = NULL;
-                    return command;
-                }
-
-                else break;
+                command->next_command = shell_command_create(i + 1);
+                break;
             }
 
-        }
+            else if(*i == SH_COMMAND_END || *i == '\0')
+            {
+                command->next_command = NULL;
+                break;
+            }
 
-        user_line = i;
+            else user_line = i + 1;
+        }
     }
+
+    return command;
+}
+
+void shell_command_print(int l, struct shell_command* command)
+{
+    int i;
+    tprintf(l, "Command (%d args): ", command->argc);
+    for(i = 0; i < command->argc; ++i) printf("\"%s\" ", command->argv[i]);
+    printf("\n");
+
+    if(command->next_command) shell_command_print(l + 1, command->next_command);
 }
 
 void shell_command_free(struct shell_command* command)

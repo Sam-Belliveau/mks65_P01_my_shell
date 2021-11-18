@@ -4,7 +4,7 @@ OBJ=./obj
 SRC=./src
 
 # Output for binary
-OUTPUT=$(BIN)/enlist_your_c_skillz
+OUTPUT=$(BIN)/my_shell
 
 # Get headers and c files
 DEPS=$(wildcard $(SRC)/*.h)
@@ -13,7 +13,7 @@ OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 # Compiler / Compiler Settings
 LINKS=-lm
-FLAGS=-O2 -D DEBUG_TRAINS
+FLAGS=-g -D DEBUG_TRAINS
 COMPILER=gcc $(FLAGS)
 
 # Command to create directory
