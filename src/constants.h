@@ -3,7 +3,13 @@
 
 #include <stdio.h>
 
+#define SH_PROGRAM_NAME "BashSL"
+
+#define SH_VERSION_NO "v1.0.0"
+
 #define SH_MAX_ARGS 64
+
+#define SH_CWD_SIZE 256
 
 #define SH_SPACE ' '
 #define SH_DELIMITER ';'

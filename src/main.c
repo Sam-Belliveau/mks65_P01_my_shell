@@ -5,6 +5,11 @@
 
 int main(void)
 {
-    struct shell_command* command = shell_command_create("ls ./this_folder/; echo Hello World");
-    shell_command_print(0, command);
+    printf("Welcome to " SH_PROGRAM_NAME " " SH_VERSION_NO "!\n");
+    
+    while(1)
+    {
+        shell_print_header();
+        shell_execute_commands(shell_get_user_line());
+    }
 }
