@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <errno.h>
+
 #include "constants.h"
 #include "shell_command.h"
 

@@ -2,18 +2,23 @@
 
 void shell_print_header()
 {
-    char cwd[SH_CWD_SIZE];
+    char cwd[SH_CWD_SIZE] = {};
+    char usr[SH_USR_SIZE] = {};
 
     getcwd(cwd, SH_CWD_SIZE);
+    gethostname(usr, SH_USR_SIZE);
 
-    printf(SH_PROGRAM_NAME ":%s> ", cwd);
+    printf(SH_COLOR_RESET "\n");
+    printf(SH_COLOR_RESET "╭─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
+    printf(SH_COLOR_RESET "│ ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+    printf(SH_COLOR_RESET "╰─╯ ");
 }
 
 struct shell_command* shell_get_user_line()
 {
-    char buf[1000000];
+    char buf[SH_USER_INPUT_BUFFER + 1] = {};
 
-    gets(buf);
+    fgets(buf, SH_USER_INPUT_BUFFER + 1, stdin);
 
     return shell_command_create(buf);
 }
@@ -30,6 +35,12 @@ void shell_execute_commands(struct shell_command* command)
 void shell_execute(struct shell_command* command)
 {
     int status, f;
+
+    // Throw out empty commands
+    if(command == NULL) return;
+    if(command->argc == 0) return;
+
+    // Handle CD
     if(strcmp(command->argv[0], "cd") == 0)
     {
         if(command->argc != 2)
@@ -41,6 +52,7 @@ void shell_execute(struct shell_command* command)
         }
     }
 
+    // Handle quit
     else if(strcmp(command->argv[0], "quit") == 0)
     {
         printf("Goodbye!\n");
@@ -54,13 +66,34 @@ void shell_execute(struct shell_command* command)
         f = fork();
             
         // Child
-        if(!f) 
+        if(f == 0) 
         {
             execvp(command->argv[0], command->argv);
-            exit(0); // TODO: is this right?
+            exit(errno);
         }
 
         // Have parent wait for child
-        else waitpid(f, &status, 0);
+        else 
+        {
+            waitpid(f, &status, 0);
+            status = WEXITSTATUS(status);
+
+            // Handle different return values from child
+            switch(status)
+            {
+                // Returned Correctly, no error
+                case 0: break;
+
+                // "No such file or directory" = Command doesn't exist
+                case 2:
+                    printf(SH_PROGRAM_NAME ": command not found: %s\n", command->argv[0]);
+                    break;
+                
+                // Handle every other error
+                default:
+                    printf(SH_PROGRAM_NAME ": %s [%d]\n", strerror(status), status);
+                    break;
+            }
+        }
     }
 }

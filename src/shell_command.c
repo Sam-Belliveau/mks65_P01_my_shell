@@ -55,16 +55,6 @@ struct shell_command* shell_command_create(char *user_line)
     return command;
 }
 
-void shell_command_print(int l, struct shell_command* command)
-{
-    int i;
-    tprintf(l, "Command (%d args): ", command->argc);
-    for(i = 0; i < command->argc; ++i) printf("\"%s\" ", command->argv[i]);
-    printf("\n");
-
-    if(command->next_command) shell_command_print(l + 1, command->next_command);
-}
-
 void shell_command_free(struct shell_command* command)
 {
     int i;

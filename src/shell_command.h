@@ -15,8 +15,6 @@ struct shell_command
 
 struct shell_command* shell_command_create(char *);
 
-void shell_command_print(int l, struct shell_command*);
-
 void shell_command_free(struct shell_command*);
 
 #endif
