@@ -45,17 +45,21 @@ void shell_execute(struct shell_command* command)
     {
         if(command->argc != 2)
         {
-            printf("error: cd: 1 argument required, %d given\n", command->argc - 1);
+            printf(SH_PROGRAM_NAME ": cd: 1 argument required, %d given\n", command->argc - 1);
         } else
         {
-            chdir(command->argv[1]);
+            status = chdir(command->argv[1]);
+
+            // print out error if cd fails
+            if(status) printf(SH_PROGRAM_NAME ": cd: %s [%d]\n", strerror(errno), errno);
         }
     }
 
     // Handle quit
-    else if(strcmp(command->argv[0], "quit") == 0)
-    {
-        printf("Goodbye!\n");
+    else if(
+        strcmp(command->argv[0], "quit") == 0 ||
+        strcmp(command->argv[0], "exit") == 0
+    ) {
         exit(0);
     }
 
@@ -68,8 +72,11 @@ void shell_execute(struct shell_command* command)
         // Child
         if(f == 0) 
         {
-            execvp(command->argv[0], command->argv);
-            exit(errno);
+            status = execvp(command->argv[0], command->argv);
+            
+            // If there is an error, return it
+            if(status) exit(errno);
+            else exit(0);
         }
 
         // Have parent wait for child
