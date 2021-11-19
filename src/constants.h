@@ -18,6 +18,9 @@
 #define SH_DELIMITER ';'
 #define SH_COMMAND_END '\n'
 
+#define SH_QUOTE_SINGLE '\''
+#define SH_QUOTE_DOUBLE '"'
+
 #define SH_COLOR_BLACK "\x001b[30m"
 #define SH_COLOR_RED "\x001b[31m"
 #define SH_COLOR_GREEN "\x001b[32m"
