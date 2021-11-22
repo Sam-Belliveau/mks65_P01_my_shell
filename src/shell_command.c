@@ -2,7 +2,20 @@
 
 // Function that shifts over everything by 1 letter
 static void remove_char(char* str)
-{ while((str[0] = str[1])) ++str; }
+{ while(str && (str[0] = str[1])) ++str; }
+
+// Remove empty commands from the chain
+static struct shell_command* shell_command_compact(struct shell_command* command)
+{
+    if(command)
+    {
+        // If command has no arguments, get rid of it
+        if(command->argc > 0) return command;
+        else return shell_command_free_individual(command);
+    }
+
+    else return command;
+}
 
 // Add argument to shell command
 static void shell_command_add_argument(struct shell_command* command, char* begin, char* end)
@@ -53,7 +66,7 @@ struct shell_command* shell_command_create(char *begin)
             else if(*end == '\0')
             {
                 shell_command_add_argument(command, begin, end);
-                return command;
+                return shell_command_compact(command);
             }
         }
         
@@ -71,7 +84,7 @@ struct shell_command* shell_command_create(char *begin)
             case SH_COMMAND_END:
                 shell_command_add_argument(command, begin, end);
                 command->next_command = shell_command_create(end + 1);
-                return command;
+                return shell_command_compact(command);
 
             // Enter special interpretation mode with quotes
             case SH_QUOTE_SINGLE:
@@ -84,7 +97,7 @@ struct shell_command* shell_command_create(char *begin)
             // Null characters end the command
             case '\0':
                 shell_command_add_argument(command, begin, end);
-                return command;
+                return shell_command_compact(command);
 
             case '\\':
                 switch(end[1])
@@ -112,20 +125,33 @@ struct shell_command* shell_command_create(char *begin)
         }
     }
 
-    return command;
+    return shell_command_compact(command);
 }
 
-void shell_command_free(struct shell_command* command)
+struct shell_command* shell_command_free_individual(struct shell_command* command)
 {
     int i;
+    struct shell_command* next_command;
 
-    if (command)
+    // If the command is not NULL, free the current command
+    // and then return the next command in the chain
+    if(command)
     {
-        shell_command_free(command->next_command);
-
+        next_command = command->next_command;
+        
         for(i = 0; i < SH_MAX_ARGS; ++i)
             free(command->argv[i]);
 
         free(command);
+
+        return next_command;
     }
+
+    else return NULL;
+}
+
+void shell_command_free(struct shell_command* command)
+{ 
+    // Free all the commands until we hit the end of the chain
+    while((command = shell_command_free_individual(command)));
 }
