@@ -9,9 +9,9 @@ void shell_print_header()
     gethostname(usr, SH_USR_SIZE);
 
     printf(SH_COLOR_RESET "\n");
-    printf(SH_COLOR_RESET "╭─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
-    printf(SH_COLOR_RESET "│ ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
-    printf(SH_COLOR_RESET "╰─╯ ");
+    printf(SH_COLOR_RESET "─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
+    printf(SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+    printf(SH_COLOR_RESET "─╯ ");
 }
 
 struct shell_command* shell_get_user_line()
@@ -72,6 +72,10 @@ void shell_execute(struct shell_command* command)
         // Child
         if(f == 0) 
         {
+            if(command->redir_stdin  != SH_STDIN)  dup2(command->redir_stdin,  SH_STDIN);
+            if(command->redir_stdout != SH_STDOUT) dup2(command->redir_stdout, SH_STDOUT);
+            if(command->redir_stderr != SH_STDERR) dup2(command->redir_stderr, SH_STDERR);
+
             status = execvp(command->argv[0], command->argv);
             
             // If there is an error, return it
