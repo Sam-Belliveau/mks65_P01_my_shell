@@ -53,6 +53,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                     command->argc -= 2;
                     remove_word(&command->argv[i]);
                     remove_word(&command->argv[i]);
+                    --i;
                 }
             }
 
@@ -71,6 +72,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                     command->argc -= 2;
                     remove_word(&command->argv[i]);
                     remove_word(&command->argv[i]);
+                    --i;
                 }
             }
         }
