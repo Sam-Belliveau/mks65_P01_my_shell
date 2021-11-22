@@ -13,17 +13,62 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
     {
         char** j;
         int i;
+        int fd;
 
         for(i = 0; i < command->argc - 1; ++i)
         {
             if(strcmp(command->argv[i], ">") == 0)
             {
-                printf("Redirecting to %s\n", command->argv[i+1]);
-                command->redir_stdout = open(command->argv[i + 1], O_WRONLY, 0666);
+                fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
                 
-                command->argc -= 2;
-                remove_word(&command->argv[i]);
-                remove_word(&command->argv[i]);
+                if(fd < 0)
+                {
+                    printf("BashSL: unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                }
+                else
+                {
+                    command->redir_stdout = fd;
+
+                    command->argc -= 2;
+                    remove_word(&command->argv[i]);
+                    remove_word(&command->argv[i]);
+                }
+            }
+
+            else if(strcmp(command->argv[i], ">>") == 0)
+            {
+                fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
+               
+                if(fd < 0)
+                {
+                    printf("BashSL: unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                }
+                else
+                {
+                    command->redir_stdout = fd;
+
+                    command->argc -= 2;
+                    remove_word(&command->argv[i]);
+                    remove_word(&command->argv[i]);
+                }
+            }
+
+            else if(strcmp(command->argv[i], "<") == 0)
+            {
+                fd = open(command->argv[i + 1], O_RDONLY);
+                
+                if(fd < 0)
+                {
+                    printf("BashSL: unable %s to stdin: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                }
+                else
+                {
+                    command->redir_stdin = fd;
+
+                    command->argc -= 2;
+                    remove_word(&command->argv[i]);
+                    remove_word(&command->argv[i]);
+                }
             }
         }
 
@@ -84,7 +129,6 @@ struct shell_command* shell_command_create(char *begin)
     command->redir_stdin = SH_STDIN;
     command->redir_stdout = SH_STDOUT;
     command->redir_stderr = SH_STDERR;
-    
 
     // Read input until the end of the command
     for(end = begin;; ++end)
@@ -129,6 +173,22 @@ struct shell_command* shell_command_create(char *begin)
             case '\'': case '\"':
                 quote = *end;
                 shell_command_add_argument(command, begin, end);
+                begin = end + 1;
+                break;
+
+            // If redirection character is seen, add it as its own argument
+            case '>':
+                shell_command_add_argument(command, begin, end);
+                begin = end;
+                if(end[1] == '>') ++end;
+                shell_command_add_argument(command, begin, end + 1);
+                begin = end + 1;
+                break;
+
+            case '<':
+                shell_command_add_argument(command, begin, end);
+                begin = end;
+                shell_command_add_argument(command, begin, end + 1);
                 begin = end + 1;
                 break;
 

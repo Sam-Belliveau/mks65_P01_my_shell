@@ -34,6 +34,7 @@ void shell_execute_commands(struct shell_command* command)
 
 void shell_execute(struct shell_command* command)
 {
+    int t_stdin, t_stdout, t_stderr;
     int status, f;
 
     // Throw out empty commands
@@ -67,15 +68,22 @@ void shell_execute(struct shell_command* command)
     // fork and run process
     else
     {
+        // Make copies of standard fds
+        t_stdin  = dup(SH_STDIN);
+        t_stdout = dup(SH_STDOUT);
+        t_stderr = dup(SH_STDERR);
+
+        // Pipe outputs to the commands specified outputs
+        dup2(command->redir_stdin,  SH_STDIN);
+        dup2(command->redir_stdout, SH_STDOUT);
+        dup2(command->redir_stderr, SH_STDERR);
+
+        // Fork Process
         f = fork();
             
         // Child
         if(f == 0) 
         {
-            if(command->redir_stdin  != SH_STDIN)  dup2(command->redir_stdin,  SH_STDIN);
-            if(command->redir_stdout != SH_STDOUT) dup2(command->redir_stdout, SH_STDOUT);
-            if(command->redir_stderr != SH_STDERR) dup2(command->redir_stderr, SH_STDERR);
-
             status = execvp(command->argv[0], command->argv);
             
             // If there is an error, return it
@@ -106,5 +114,20 @@ void shell_execute(struct shell_command* command)
                     break;
             }
         }
+
+        // Close the files opened by the command
+        close(SH_STDIN);
+        close(SH_STDOUT);
+        close(SH_STDERR);
+
+        // Move the duplicated standard pipes back to the original spots
+        dup2(t_stdin,  SH_STDIN);
+        dup2(t_stdout, SH_STDOUT);
+        dup2(t_stderr, SH_STDERR);
+
+        // Close the duplicates
+        close(t_stdin);
+        close(t_stdout);
+        close(t_stderr);
     }
 }

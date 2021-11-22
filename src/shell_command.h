@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
+
 #include "constants.h"
 
 struct shell_command 
