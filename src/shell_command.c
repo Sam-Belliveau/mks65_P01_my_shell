@@ -17,7 +17,9 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
 
         for(i = 0; i < command->argc - 1; ++i)
         {
-            if(strcmp(command->argv[i], ">") == 0)
+            // The first part of the if statement prevents multiple redirects for
+            // a single command, this prevents a leak from happening with the open file
+            if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">") == 0)
             {
                 fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
                 
@@ -36,7 +38,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                 }
             }
 
-            else if(strcmp(command->argv[i], ">>") == 0)
+            else if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">>") == 0)
             {
                 fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
                
@@ -54,7 +56,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                 }
             }
 
-            else if(strcmp(command->argv[i], "<") == 0)
+            else if(command->redir_stdin == SH_STDIN && strcmp(command->argv[i], "<") == 0)
             {
                 fd = open(command->argv[i + 1], O_RDONLY);
                 
