@@ -74,21 +74,21 @@ struct shell_command* shell_command_create(char *begin)
         else switch(*end)
         {
             // If there is a space, just add argument to arguments
-            case SH_SPACE:
+            case ' ':
                 shell_command_add_argument(command, begin, end);
                 begin = end + 1;
                 break;
 
             // Delimiters and Command Ends split up commands 
-            case SH_DELIMITER:
-            case SH_COMMAND_END:
+            case ';':
+            case '\n':
                 shell_command_add_argument(command, begin, end);
                 command->next_command = shell_command_create(end + 1);
                 return shell_command_compact(command);
 
             // Enter special interpretation mode with quotes
-            case SH_QUOTE_SINGLE:
-            case SH_QUOTE_DOUBLE:
+            case '\'':
+            case '\"':
                 quote = *end;
                 shell_command_add_argument(command, begin, end);
                 begin = end + 1;
