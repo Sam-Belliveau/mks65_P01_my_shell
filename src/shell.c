@@ -25,38 +25,27 @@ struct shell_command* shell_get_user_line()
 
 void shell_execute_commands(struct shell_command* command)
 {
-    char name_buf[256] = {};
-    int fd_w, fd_r;
+    int pipe_status, fds[2];
 
     if(command != NULL && command->argc > 0)
     {
         if(command->next_command != NULL && command->pipe_output)
         {
-            // Name for temporary file that we pipe inputs in and out of
-            sprintf(name_buf, "." SH_PROGRAM_NAME "-" SH_VERSION_NO "-%lu-%lu-temp-pipe", time(0), clock());
+            pipe_status = pipe(fds);
 
-            // Create file for command to write output to
-            fd_w = open(name_buf, O_WRONLY | O_CREAT | O_EXCL, 0644);            
-            if(fd_w < 0) printf(SH_PROGRAM_NAME ": Error when piping stdout: %s [%d]\n", strerror(errno), errno);
-            else command->redir_stdout = fd_w;
-
-            shell_execute(command);
-
-            // Read file into the stdin of the next command
-            fd_r = open(name_buf, O_RDONLY);
-            if(fd_r < 0) printf(SH_PROGRAM_NAME ": Error when piping stdin: %s [%d]\n", strerror(errno), errno);
-            else command->next_command->redir_stdin = fd_r;
-
-            shell_execute_commands(command->next_command);
-
-            // Remove the temporary file
-            remove(name_buf);
+            if(pipe_status < 0) 
+            {
+                fprintf(stderr, SH_PROGRAM_NAME ": Error when piping %s to %s: %s [%d]\n", command->argv[0], command->next_command->argv[0], strerror(errno), errno);
+            }
+            else
+            {
+                command->redir_stdout = fds[1];
+                command->next_command->redir_stdin = fds[0];
+            }
         }
-        else
-        {
-            shell_execute(command);
-            shell_execute_commands(command->next_command);
-        }
+        
+        shell_execute(command);
+        shell_execute_commands(command->next_command);
     }
 }
 
@@ -74,13 +63,13 @@ void shell_execute(struct shell_command* command)
     {
         if(command->argc != 2)
         {
-            printf(SH_PROGRAM_NAME ": cd: 1 argument required, %d given\n", command->argc - 1);
+            fprintf(stderr, SH_PROGRAM_NAME ": cd: 1 argument required, %d given\n", command->argc - 1);
         } else
         {
             status = chdir(command->argv[1]);
 
             // print out error if cd fails
-            if(status) printf(SH_PROGRAM_NAME ": cd: %s [%d]\n", strerror(errno), errno);
+            if(status) fprintf(stderr, SH_PROGRAM_NAME ": cd: %s [%d]\n", strerror(errno), errno);
         }
     }
 
@@ -122,12 +111,12 @@ void shell_execute(struct shell_command* command)
 
                 // "No such file or directory" = Command doesn't exist
                 case 2:
-                    printf(SH_PROGRAM_NAME ": command not found: %s\n", command->argv[0]);
+                    fprintf(stderr, SH_PROGRAM_NAME ": command not found: %s\n", command->argv[0]);
                     break;
                 
                 // Handle every other error
                 default:
-                    printf(SH_PROGRAM_NAME ": %s [%d]\n", strerror(errno), errno);
+                    fprintf(stderr, SH_PROGRAM_NAME ": %s [%d]\n", strerror(errno), errno);
                     break;
             }
 
@@ -139,22 +128,16 @@ void shell_execute(struct shell_command* command)
         {
             waitpid(f, &status, 0);
             status = WEXITSTATUS(status);
-
         }
 
-        // Close the files opened by the command
-        close(SH_STDIN);
-        close(SH_STDOUT);
-        close(SH_STDERR);
-
-        // Move the duplicated standard pipes back to the original spots
-        dup2(t_stdin,  SH_STDIN);
-        dup2(t_stdout, SH_STDOUT);
-        dup2(t_stderr, SH_STDERR);
-
-        // Close the duplicates
-        close(t_stdin);
-        close(t_stdout);
-        close(t_stderr);
+        // Close all of the outputs opened by the command
+        close(SH_STDIN); close(command->redir_stdin);
+        close(SH_STDOUT); close(command->redir_stdout);
+        close(SH_STDERR); close(command->redir_stderr);
+    
+        // Move the outputs back to their place
+        dup2(t_stdin,  SH_STDIN);  close(t_stdin);
+        dup2(t_stdout, SH_STDOUT); close(t_stdout);
+        dup2(t_stderr, SH_STDERR); close(t_stderr);
     }
 }

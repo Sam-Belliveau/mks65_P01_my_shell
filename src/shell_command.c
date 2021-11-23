@@ -124,7 +124,7 @@ struct shell_command* shell_command_create(char *begin)
 
     if(command == NULL)
     {
-        printf(SH_PROGRAM_NAME ": fatal error allocating memory! exiting...\n");
+        fprintf(stderr, SH_PROGRAM_NAME ": fatal error allocating memory! exiting...\n");
         exit(-1);
     }
 
