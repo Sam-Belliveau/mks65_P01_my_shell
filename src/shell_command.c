@@ -19,11 +19,11 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
         {
             // The first part of the if statement prevents multiple redirects for
             // a single command, this prevents a leak from happening with the open file
-            if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">") == 0)
+            if(strcmp(command->argv[i], ">") == 0)
             {
-                if(command->pipe_output)
+                if(command->pipe_output || command->redir_stdout != SH_STDOUT)
                 {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
                 }
                 else
                 {
@@ -44,11 +44,11 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                 }
             }
 
-            else if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">>") == 0)
+            else if(strcmp(command->argv[i], ">>") == 0)
             {
-                if(command->pipe_output)
+                if(command->pipe_output || command->redir_stdout != SH_STDOUT)
                 {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
                 }
                 else
                 {
@@ -70,11 +70,11 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                 }
             }
 
-            else if(command->redir_stdin == SH_STDIN && strcmp(command->argv[i], "<") == 0)
+            else if(strcmp(command->argv[i], "<") == 0)
             {
-                if(command->pipe_output)
+                if(command->pipe_output || command->redir_stdin != SH_STDIN)
                 {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
                 }
                 else
                 {
