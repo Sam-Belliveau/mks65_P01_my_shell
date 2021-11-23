@@ -21,58 +21,78 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
             // a single command, this prevents a leak from happening with the open file
             if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">") == 0)
             {
-                fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
-                
-                if(fd < 0)
+                if(command->pipe_output)
                 {
-                    printf("BashSL: unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
                 }
                 else
                 {
-                    command->redir_stdout = fd;
-
-                    command->argc -= 2;
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    --i;
+                    fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
+                    
+                    if(fd < 0)
+                    {
+                        fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    }
+                    else
+                    {
+                        command->redir_stdout = fd;
+                        command->argc -= 2;
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        --i;
+                    }
                 }
             }
 
             else if(command->redir_stdout == SH_STDOUT && strcmp(command->argv[i], ">>") == 0)
             {
-                fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
-               
-                if(fd < 0)
+                if(command->pipe_output)
                 {
-                    printf("BashSL: unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
                 }
                 else
                 {
-                    command->redir_stdout = fd;
+                    fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
+                
+                    if(fd < 0)
+                    {
+                        fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    }
+                    else
+                    {
+                        command->redir_stdout = fd;
 
-                    command->argc -= 2;
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    --i;
+                        command->argc -= 2;
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        --i;
+                    }
                 }
             }
 
             else if(command->redir_stdin == SH_STDIN && strcmp(command->argv[i], "<") == 0)
             {
-                fd = open(command->argv[i + 1], O_RDONLY);
-                
-                if(fd < 0)
+                if(command->pipe_output)
                 {
-                    printf("BashSL: unable %s to stdin: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: redirection is ignored when piping commands\n");
                 }
                 else
                 {
-                    command->redir_stdin = fd;
+                    fd = open(command->argv[i + 1], O_RDONLY);
+                    
+                    if(fd < 0)
+                    {
+                        fprintf(stderr, SH_PROGRAM_NAME ": unable %s to stdin: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    }
+                    else
+                    {
+                        command->redir_stdin = fd;
 
-                    command->argc -= 2;
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    --i;
+                        command->argc -= 2;
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        free(command->argv[i]); remove_word(&command->argv[i]);
+                        --i;
+                    }
                 }
             }
         }
