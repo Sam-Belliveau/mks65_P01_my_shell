@@ -20,6 +20,8 @@ struct shell_command
     int redir_stdin;
     int redir_stdout;
     int redir_stderr;
+
+    int pipe_output;
 };
 
 struct shell_command* shell_command_create(char *);

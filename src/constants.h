@@ -18,6 +18,9 @@
 #define SH_STDOUT STDOUT_FILENO
 #define SH_STDERR STDERR_FILENO
 
+#define SH_TRUE 1
+#define SH_FALSE 0
+
 #define SH_COLOR_BLACK "\x001b[30m"
 #define SH_COLOR_RED "\x001b[31m"
 #define SH_COLOR_GREEN "\x001b[32m"

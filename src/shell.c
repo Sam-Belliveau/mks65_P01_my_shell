@@ -25,10 +25,38 @@ struct shell_command* shell_get_user_line()
 
 void shell_execute_commands(struct shell_command* command)
 {
+    char name_buf[256] = {};
+    int fd_w, fd_r;
+
     if(command != NULL && command->argc > 0)
     {
-        shell_execute(command);
-        shell_execute_commands(command->next_command);
+        if(command->next_command != NULL && command->pipe_output)
+        {
+            // Name for temporary file that we pipe inputs in and out of
+            sprintf(name_buf, "." SH_PROGRAM_NAME "-" SH_VERSION_NO "-%lu-%lu-temp-pipe", time(0), clock());
+
+            // Create file for command to write output to
+            fd_w = open(name_buf, O_WRONLY | O_CREAT | O_EXCL, 0644);            
+            if(fd_w < 0) printf(SH_PROGRAM_NAME ": Error when piping stdout: %s [%d]\n", strerror(errno), errno);
+            else command->redir_stdout = fd_w;
+
+            shell_execute(command);
+
+            // Read file into the stdin of the next command
+            fd_r = open(name_buf, O_RDONLY);
+            if(fd_r < 0) printf(SH_PROGRAM_NAME ": Error when piping stdin: %s [%d]\n", strerror(errno), errno);
+            else command->next_command->redir_stdin = fd_r;
+
+            shell_execute_commands(command->next_command);
+
+            // Remove the temporary file
+            remove(name_buf);
+        }
+        else
+        {
+            shell_execute(command);
+            shell_execute_commands(command->next_command);
+        }
     }
 }
 
@@ -86,19 +114,8 @@ void shell_execute(struct shell_command* command)
         {
             status = execvp(command->argv[0], command->argv);
             
-            // If there is an error, return it
-            if(status) exit(errno);
-            else exit(0);
-        }
-
-        // Have parent wait for child
-        else 
-        {
-            waitpid(f, &status, 0);
-            status = WEXITSTATUS(status);
-
             // Handle different return values from child
-            switch(status)
+            switch(errno)
             {
                 // Returned Correctly, no error
                 case 0: break;
@@ -110,9 +127,19 @@ void shell_execute(struct shell_command* command)
                 
                 // Handle every other error
                 default:
-                    printf(SH_PROGRAM_NAME ": %s [%d]\n", strerror(status), status);
+                    printf(SH_PROGRAM_NAME ": %s [%d]\n", strerror(errno), errno);
                     break;
             }
+
+            exit(status);
+        }
+
+        // Have parent wait for child
+        else 
+        {
+            waitpid(f, &status, 0);
+            status = WEXITSTATUS(status);
+
         }
 
         // Close the files opened by the command

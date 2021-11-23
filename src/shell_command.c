@@ -135,6 +135,8 @@ struct shell_command* shell_command_create(char *begin)
     command->redir_stdout = SH_STDOUT;
     command->redir_stderr = SH_STDERR;
 
+    command->pipe_output = SH_FALSE;
+
     // Read input until the end of the command
     for(end = begin;; ++end)
     {
@@ -171,6 +173,12 @@ struct shell_command* shell_command_create(char *begin)
             // Delimiters and Command Ends split up commands 
             case ';': case '\n':
                 shell_command_add_argument(command, begin, end);
+                command->next_command = shell_command_create(end + 1);
+                return shell_command_compact(command);
+
+            case '|':
+                shell_command_add_argument(command, begin, end);
+                command->pipe_output = SH_TRUE;
                 command->next_command = shell_command_create(end + 1);
                 return shell_command_compact(command);
 
