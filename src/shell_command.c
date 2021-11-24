@@ -189,6 +189,10 @@ struct shell_command* shell_command_create(char *begin)
                         }
                     }
                 }
+                else
+                {
+                    fprintf(stderr, SH_PROGRAM_NAME ": warning: unable to pipe into undefined command\n");
+                }
 
                 return shell_command_compact(command);
 

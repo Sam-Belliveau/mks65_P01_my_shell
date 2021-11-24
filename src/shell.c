@@ -109,8 +109,12 @@ void shell_execute(struct shell_command* command)
         // Have parent wait for child
         else 
         {
-            waitpid(f, &status, 0);
-            status = WEXITSTATUS(status);
+            // Do not wait for child if you do not need to
+            if(command->redir_stdout == SH_STDOUT)
+            {
+                waitpid(f, &status, 0);
+                status = WEXITSTATUS(status);
+            }
         }
 
         // Close all of the outputs opened by the command
