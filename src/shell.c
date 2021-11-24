@@ -25,25 +25,8 @@ struct shell_command* shell_get_user_line()
 
 void shell_execute_commands(struct shell_command* command)
 {
-    int pipe_status, fds[2];
-
     if(command != NULL && command->argc > 0)
     {
-        if(command->next_command != NULL && command->pipe_output)
-        {
-            pipe_status = pipe(fds);
-
-            if(pipe_status < 0) 
-            {
-                fprintf(stderr, SH_PROGRAM_NAME ": Error when piping %s to %s: %s [%d]\n", command->argv[0], command->next_command->argv[0], strerror(errno), errno);
-            }
-            else
-            {
-                command->redir_stdout = fds[1];
-                command->next_command->redir_stdin = fds[0];
-            }
-        }
-        
         shell_execute(command);
         shell_execute_commands(command->next_command);
     }

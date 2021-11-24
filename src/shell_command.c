@@ -9,91 +9,59 @@ static void remove_word(char** word)
 
 static struct shell_command* shell_command_redirects(struct shell_command* command)
 {
+    char** j;
+    int i;
+    int status, fd;
+
     if(command)
     {
-        char** j;
-        int i;
-        int fd;
-
         for(i = 0; i < command->argc - 1; ++i)
         {
-            // The first part of the if statement prevents multiple redirects for
-            // a single command, this prevents a leak from happening with the open file
+            status = 0;
+
+            // Check for the different types of redirection and update status
+            // If they fail, add -1 as a status.
             if(strcmp(command->argv[i], ">") == 0)
             {
-                if(command->pipe_output || command->redir_stdout != SH_STDOUT)
-                {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
-                }
-                else
-                {
-                    fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
-                    
-                    if(fd < 0)
-                    {
-                        fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
-                    }
-                    else
-                    {
-                        command->redir_stdout = fd;
-                        command->argc -= 2;
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        --i;
-                    }
-                }
+                if(command->redir_stdout != SH_STDOUT) status = -1;
+                else status = 1, fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
             }
 
             else if(strcmp(command->argv[i], ">>") == 0)
             {
-                if(command->pipe_output || command->redir_stdout != SH_STDOUT)
-                {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
-                }
-                else
-                {
-                    fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
-                
-                    if(fd < 0)
-                    {
-                        fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect stdout to %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
-                    }
-                    else
-                    {
-                        command->redir_stdout = fd;
-
-                        command->argc -= 2;
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        --i;
-                    }
-                }
+                if(command->redir_stdout != SH_STDOUT) status = -1;
+                else status = 2, fd = open(command->argv[i + 1], O_WRONLY | O_APPEND | O_CREAT, 0666);
             }
 
             else if(strcmp(command->argv[i], "<") == 0)
             {
-                if(command->pipe_output || command->redir_stdin != SH_STDIN)
-                {
-                    fprintf(stderr, SH_PROGRAM_NAME ": Warning: multiple redirects / pipes are not supported\n");
-                }
-                else
-                {
-                    fd = open(command->argv[i + 1], O_RDONLY);
-                    
-                    if(fd < 0)
-                    {
-                        fprintf(stderr, SH_PROGRAM_NAME ": unable %s to stdin: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
-                    }
-                    else
-                    {
-                        command->redir_stdin = fd;
+                if(command->redir_stdin != SH_STDIN) status = -1;
+                else status = 3, fd = open(command->argv[i + 1], O_RDONLY);
+            }
 
-                        command->argc -= 2;
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        free(command->argv[i]); remove_word(&command->argv[i]);
-                        --i;
-                    }
+            // Depending on the status, do different things
+            switch (status)
+            {
+            case 0: break;
+            case -1:
+                fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
+                break;
+            
+            default:
+                if(fd < 0)
+                {
+                    fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                } else
+                {
+                    if(status == 3) command->redir_stdin = fd;
+                    else command->redir_stdout = fd;
+
+                    command->argc -= 2;
+                    free(command->argv[i]); remove_word(&command->argv[i]);
+                    free(command->argv[i]); remove_word(&command->argv[i]);
+                    --i;
                 }
+                break;
             }
         }
 
@@ -140,6 +108,8 @@ struct shell_command* shell_command_create(char *begin)
 {
     char quote = '\0';
     char *end, *buf;
+    int pipe_status, fds[2];
+
     struct shell_command* command = calloc(1, sizeof(struct shell_command));
 
     if(command == NULL)
@@ -154,8 +124,6 @@ struct shell_command* shell_command_create(char *begin)
     command->redir_stdin = SH_STDIN;
     command->redir_stdout = SH_STDOUT;
     command->redir_stderr = SH_STDERR;
-
-    command->pipe_output = SH_FALSE;
 
     // Read input until the end of the command
     for(end = begin;; ++end)
@@ -198,8 +166,30 @@ struct shell_command* shell_command_create(char *begin)
 
             case '|':
                 shell_command_add_argument(command, begin, end);
-                command->pipe_output = SH_TRUE;
                 command->next_command = shell_command_create(end + 1);
+
+                if(command->next_command != NULL)
+                {
+                    if(command->next_command->redir_stdin != SH_STDIN)
+                    {
+                        fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
+                    }
+                    else
+                    {
+                        pipe_status = pipe(fds);
+
+                        if(pipe_status < 0) 
+                        {
+                            fprintf(stderr, SH_PROGRAM_NAME ": Error when piping %s to %s: %s [%d]\n", command->argv[0], command->next_command->argv[0], strerror(errno), errno);
+                        }
+                        else
+                        {
+                            command->redir_stdout = fds[1];
+                            command->next_command->redir_stdin = fds[0];
+                        }
+                    }
+                }
+
                 return shell_command_compact(command);
 
             // Enter special interpretation mode with quotes

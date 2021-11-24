@@ -31,5 +31,4 @@
 #define SH_COLOR_WHITE "\x001b[37m"
 #define SH_COLOR_RESET "\x001b[0m"
 
-
 #endif

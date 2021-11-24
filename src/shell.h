@@ -20,4 +20,5 @@ struct shell_command* shell_get_user_line();
 void shell_execute_commands(struct shell_command*);
 
 void shell_execute(struct shell_command*);
+
 #endif
