@@ -74,11 +74,11 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
 // Remove empty commands from the chain
 static struct shell_command* shell_command_compact(struct shell_command* command)
 {
-    if(command)
+    if(command != NULL)
     {
         // If command has no arguments, get rid of it
         if(command->argc > 0) return shell_command_redirects(command);
-        else return shell_command_redirects(shell_command_free_individual(command));
+        else return shell_command_compact(shell_command_free_individual(command));
     }
 
     else return shell_command_redirects(command);

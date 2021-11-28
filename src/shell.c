@@ -25,7 +25,7 @@ struct shell_command* shell_get_user_line()
 
 void shell_execute_commands(struct shell_command* command)
 {
-    if(command != NULL && command->argc > 0)
+    if(command != NULL)
     {
         shell_execute(command);
         shell_execute_commands(command->next_command);
