@@ -1,5 +1,6 @@
 #include "shell.h"
 
+// Print prompt for users to look at when typing commands
 void shell_print_header()
 {
     char cwd[SH_CWD_SIZE] = {};
@@ -14,6 +15,7 @@ void shell_print_header()
     printf(SH_COLOR_RESET "─╯ ");
 }
 
+// Safely read user input for commands and return a command chain
 struct shell_command* shell_get_user_line()
 {
     char buf[SH_USER_INPUT_BUFFER + 1] = {};
@@ -23,6 +25,7 @@ struct shell_command* shell_get_user_line()
     return shell_command_create(buf);
 }
 
+// Execute every command in the chain
 void shell_execute_commands(struct shell_command* command)
 {
     if(command != NULL)
@@ -32,6 +35,7 @@ void shell_execute_commands(struct shell_command* command)
     }
 }
 
+// Execute a command and handle file descriptors / forking
 void shell_execute(struct shell_command* command)
 {
     int t_stdin, t_stdout, t_stderr;

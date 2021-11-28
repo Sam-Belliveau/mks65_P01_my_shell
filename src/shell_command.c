@@ -7,6 +7,8 @@ static void remove_char(char* str)
 static void remove_word(char** word)
 { while(word && (word[0] = word[1])) ++word; }
 
+// Scan through command for any redirection arguments,
+// if there are any, edit the file descriptors
 static struct shell_command* shell_command_redirects(struct shell_command* command)
 {
     char** j;
@@ -20,7 +22,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
             status = 0;
 
             // Check for the different types of redirection and update status
-            // If they fail, add -1 as a status.
+            // If there was already a redirection, add -1 as a status.
             if(strcmp(command->argv[i], ">") == 0)
             {
                 if(command->redir_stdout != SH_STDOUT) status = -1;
@@ -257,6 +259,7 @@ struct shell_command* shell_command_create(char *begin)
     return shell_command_compact(command);
 }
 
+// Free command and return the next command in the chain
 struct shell_command* shell_command_free_individual(struct shell_command* command)
 {
     int i;
@@ -279,6 +282,7 @@ struct shell_command* shell_command_free_individual(struct shell_command* comman
     else return NULL;
 }
 
+// Free the entire chain of commands.
 void shell_command_free(struct shell_command* command)
 { 
     // Free all the commands until we hit the end of the chain
