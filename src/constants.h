@@ -3,9 +3,9 @@
 
 #include <stdio.h>
 
-#define SH_PROGRAM_NAME "BashSL"
+#define SH_PROGRAM_NAME "SALSH"
 
-#define SH_VERSION_NO "v1.0.0"
+#define SH_VERSION_NO "v2.0.0"
 
 #define SH_MAX_ARGS 128
 

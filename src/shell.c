@@ -9,10 +9,10 @@ void shell_print_header()
     getcwd(cwd, SH_CWD_SIZE);
     gethostname(usr, SH_USR_SIZE);
 
-    printf(SH_COLOR_RESET "\n");
-    printf(SH_COLOR_RESET "─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
-    printf(SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
-    printf(SH_COLOR_RESET "─╯ ");
+    fprintf(stderr, SH_COLOR_RESET "\n");
+    fprintf(stderr, SH_COLOR_RESET "─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
+    fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+    fprintf(stderr, SH_COLOR_RESET "─╯ ");
 }
 
 // Safely read user input for commands and return a command chain

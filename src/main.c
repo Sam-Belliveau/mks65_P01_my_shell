@@ -3,12 +3,30 @@
 
 #include <stdio.h>
 
+// Use to check if PID value is a child or not in signal_handler
+static pid_t parent_pid;
+
+// Handle SIGINT so that the shell can survive a ctrl+c
+static void signal_handler(int);
+
 int main(void)
 {
     struct shell_command* user_command;
 
-    printf("Welcome to " SH_PROGRAM_NAME " " SH_VERSION_NO "!\n");
+    parent_pid = getpid();
 
+    printf("\n\t " 
+        SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET 
+        " ("SH_COLOR_RED"S"SH_COLOR_RESET"am's "
+            SH_COLOR_RED"A"SH_COLOR_RESET"nd "
+            SH_COLOR_RED"L"SH_COLOR_RESET"ogan's "
+            SH_COLOR_RED"SH"SH_COLOR_RESET"ell) " 
+            SH_COLOR_GREEN SH_VERSION_NO SH_COLOR_RESET 
+    "!\n");
+
+    signal(SIGINT, signal_handler);
+
+    // Very Simple Shell Loop
     while(1)
     {
         shell_print_header();
@@ -16,5 +34,17 @@ int main(void)
         user_command = shell_get_user_line();
         shell_execute_commands(user_command);
         shell_command_free(user_command);
+    }
+}
+
+// Handle SIGINT by not closing if it is the parent process
+// and exiting if it is the child. The child usually overwrites this however.
+static void signal_handler(int signal) {
+    if(signal == SIGINT)
+    {
+        if(getpid() == parent_pid) 
+            fprintf(stderr, "(SIGINT)");
+        else 
+            exit(-1);
     }
 }
