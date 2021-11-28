@@ -18,7 +18,7 @@ struct shell_command* shell_get_user_line()
 {
     char buf[SH_USER_INPUT_BUFFER + 1] = {};
 
-    fgets(buf, SH_USER_INPUT_BUFFER + 1, stdin);
+    fgets(buf, SH_USER_INPUT_BUFFER, stdin);
 
     return shell_command_create(buf);
 }

@@ -14,7 +14,7 @@
 struct shell_command 
 {
     int argc;
-    char* argv[SH_MAX_ARGS];
+    char* argv[SH_MAX_ARGS + 1];
 
     int redir_stdin;
     int redir_stdout;

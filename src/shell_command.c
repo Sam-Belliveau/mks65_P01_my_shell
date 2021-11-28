@@ -96,10 +96,14 @@ static void shell_command_add_argument(struct shell_command* command, char* begi
     // Get rid of empty space
     if(size != 0) 
     {    
-        // Copy buffer into command
-        buf = calloc(size + 1, sizeof(char));
-        strncpy(buf, begin, size);
-        command->argv[command->argc++] = buf;
+        if(command->argc < SH_MAX_ARGS)
+        {
+            // Copy buffer into command
+            buf = calloc(size + 1, sizeof(char));
+            strncpy(buf, begin, size);
+            command->argv[command->argc++] = buf;
+        }
+        else fprintf(stderr, SH_PROGRAM_NAME ": warning: too many arguments, ignoring \"%.*s\" [MAX_ARGS=%d]\n", size, begin, SH_MAX_ARGS);
     }
 }
 
