@@ -1,19 +1,34 @@
 #include "shell_command.h"
 
-// Function that shifts over everything by 1 letter
+/**
+ * @brief remove the first character from a string
+ * 
+ * @param str string to remove character from
+ */
 static void remove_char(char* str)
 { while(str && (str[0] = str[1])) ++str; }
 
+/**
+ * @brief remove the first string from a list of strings
+ * 
+ * this function does not free the string, 
+ * this must be done before hand
+ * 
+ * @param word list of strings to remove string from
+ */
 static void remove_word(char** word)
 { while(word && (word[0] = word[1])) ++word; }
 
-// Scan through command for any redirection arguments,
-// if there are any, edit the file descriptors
+/**
+ * @brief scan arguments for redirections, and add them to the function
+ * 
+ * @param command command to add redirections to
+ * @return pointer to the command which has the redirections in it
+ */
 static struct shell_command* shell_command_redirects(struct shell_command* command)
 {
     char** j;
-    int i;
-    int status, fd;
+    int i, status, fd;
 
     if(command)
     {
@@ -82,7 +97,21 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
     return NULL;
 }
 
-// Remove empty commands from the chain
+/**
+ * @brief remove empty commands from the chain AND add redirections
+ * 
+ * this function is run before returning from shell_command_create(...)
+ * so it prepares the command to be returned.
+ * 
+ * the process involves:
+ * 
+ *  1) freeing the command if it is empty
+ *  2) returning the next valid command
+ *  3) adding redirects to the command
+ * 
+ * @param command the command to be compacted
+ * @return the compacted command
+ */
 static struct shell_command* shell_command_compact(struct shell_command* command)
 {
     if(command != NULL)
@@ -95,7 +124,19 @@ static struct shell_command* shell_command_compact(struct shell_command* command
     else return shell_command_redirects(command);
 }
 
-// Add argument to shell command
+/**
+ * @brief add an argument to the list of arguments in a shell_command
+ * 
+ * the argument that you are adding to the command is represented by
+ * a beginning and end pointer.
+ * 
+ * this function allocates the argument on the heap, so it is important
+ * to free the strings after you are done with executing the command
+ * 
+ * @param command the command to add the arguments to
+ * @param begin the beginning character of the argument to add
+ * @param end the ending character of the argument to add
+ */
 static void shell_command_add_argument(struct shell_command* command, char* begin, char* end)
 {
     int size;
@@ -118,7 +159,25 @@ static void shell_command_add_argument(struct shell_command* command, char* begi
     }
 }
 
-// Initialize shell command
+/**
+ * @brief parse a shell_command from a string
+ * 
+ * this function parses a string into a shell_command and looks
+ * for a couple of things, these things are:
+ * 
+ *  1) ' & " - to ignore special characters between quotes
+ *  2) ' ' - to separate arguments
+ *  3) '\n' & ';' - to separate commands
+ *  4) '|' - to pipe commands
+ *  5) '>', '>>', '<' - allow redirection without spaces surrounding the redirects
+ *  6) '\' - allow escape characters
+ * 
+ * after the commands are parsed, the commands run through shell_command_compact(...)
+ * in order to remove any empty commands, and to scan for any redirects.
+ * 
+ * @param begin the first character of the string you want to parse
+ * @return the parsed shell_command
+ */
 struct shell_command* shell_command_create(char *begin)
 {
     char quote = '\0';
@@ -270,7 +329,17 @@ struct shell_command* shell_command_create(char *begin)
     return shell_command_compact(command);
 }
 
-// Free command and return the next command in the chain
+/**
+ * @brief free an individual command from the list of commands
+ * 
+ * this command frees a shell_command struct, by:
+ *  1) freeing all of the strings in the command
+ *  2) freeing the allocated memory
+ *  3) returning the next command
+ * 
+ * @param command the command you want to free
+ * @return the next command in the chain
+ */
 struct shell_command* shell_command_free_individual(struct shell_command* command)
 {
     int i;
@@ -293,7 +362,11 @@ struct shell_command* shell_command_free_individual(struct shell_command* comman
     else return NULL;
 }
 
-// Free the entire chain of commands.
+/**
+ * @brief free every command in the shell_command chain
+ * 
+ * @param command the list of commands you want to free
+ */
 void shell_command_free(struct shell_command* command)
 { 
     // Free all the commands until we hit the end of the chain

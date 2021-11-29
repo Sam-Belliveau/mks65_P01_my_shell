@@ -5,14 +5,14 @@
 
 #define SH_PROGRAM_NAME "SALSH"
 
-#define SH_VERSION_NO "v2.0.0"
+#define SH_VERSION_NO "v2.0.1"
 
-#define SH_MAX_ARGS 128
+#define SH_MAX_ARGS (1 << 8)
 
-#define SH_CWD_SIZE 4096
-#define SH_USR_SIZE 1024
+#define SH_CWD_SIZE (1 << 12)
+#define SH_USR_SIZE (1 << 10)
 
-#define SH_USER_INPUT_BUFFER 2048
+#define SH_USER_INPUT_BUFFER (1 << 12)
 
 #define SH_STDIN STDIN_FILENO
 #define SH_STDOUT STDOUT_FILENO

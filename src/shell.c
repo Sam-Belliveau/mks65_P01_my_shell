@@ -1,6 +1,8 @@
 #include "shell.h"
 
-// Get the home directory of the user
+/**
+ * @return a string that represents the home directory of the current user
+ */
 static const char* shell_get_home()
 {
     static const char* home_dir = NULL;
@@ -10,7 +12,13 @@ static const char* shell_get_home()
     return home_dir;
 }
 
-// Print prompt for users to look at when typing commands
+/**
+ * @brief Display a prompt for the user to type into.
+ * 
+ * this prompt includes the current directory, 
+ * which is simplified if it is in the home directory
+ * along with the user and the name of the shell.
+ */
 void shell_print_header()
 {
     const char* home_dir = shell_get_home();
@@ -32,7 +40,14 @@ void shell_print_header()
     fprintf(stderr, SH_COLOR_RESET "─╯ ");
 }
 
-// Safely read user input for commands and return a command chain
+/**
+ * @brief create a shell_command from stdin
+ * 
+ *  1) safely read characters from stdin into a buffer
+ *  2) parse them into a shell_command struct
+ * 
+ * @return the parsed command
+ */
 struct shell_command* shell_get_user_line()
 {
     char buf[SH_USER_INPUT_BUFFER + 1] = {};
@@ -42,7 +57,13 @@ struct shell_command* shell_get_user_line()
     return shell_command_create(buf);
 }
 
-// Execute every command in the chain
+/**
+ * @brief execute all of the commands in the shell_command linked list
+ * 
+ * the execution is done with shell_execute(...) which deals with every special case. 
+ * 
+ * @param command list of commands to execute
+ */
 void shell_execute_commands(struct shell_command* command)
 {
     if(command != NULL)
@@ -52,7 +73,26 @@ void shell_execute_commands(struct shell_command* command)
     }
 }
 
-// Execute a command and handle file descriptors / forking
+/**
+ * @brief execute an individual command.
+ * 
+ * this function will detect:
+ *  - if the command is NULL
+ *  - if the command has no arguments
+ *  - if the command is "cd"
+ *      - the command will then change the directory of the shell
+ *  - if the command is "exit" / "quit"
+ *      - the command will then close the shell
+ * 
+ * otherwise, the command will:
+ *  1) set stdin, stdout, stderr to the commands specifications
+ *  2) fork()
+ *      2a) execvp()
+ *      2b) waitpid()
+ *  3) move the file descriptors back
+ * 
+ * @param command command to execute
+ */
 void shell_execute(struct shell_command* command)
 {
     char dir[2 * SH_CWD_SIZE + 2] = {};
@@ -76,9 +116,12 @@ void shell_execute(struct shell_command* command)
 
             else
             {
+                // Check to see if the first character is '~'
+                // if it is, then add the home directory to the beginning
                 if(command->argv[1][0] == '~') sprintf(dir, "%.*s%.*s", SH_CWD_SIZE, shell_get_home(), SH_CWD_SIZE, command->argv[1] + 1);
                 else sprintf(dir, "%.*s", SH_CWD_SIZE, command->argv[1]);
 
+                // change directories
                 status = chdir(dir);
 
                 // print out error if cd fails
