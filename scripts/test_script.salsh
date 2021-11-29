@@ -1,0 +1,18 @@
+
+echo "Running Test Script to tell if shell is working"
+echo ""
+echo "Running 'ls':"
+ls
+
+echo ""
+echo ""
+echo "Running 'ls -A > a.txt; cat a.txt':"
+ls -A > a.txt; cat a.txt
+
+echo ""
+echo ""
+echo "Running 'ls | wc;;;; ; ;    ; ;  ;;; ; ls':"
+ls | wc;;;; ; ;    ; ;  ;;; ; ls
+
+echo ""
+echo "Finished Test!"

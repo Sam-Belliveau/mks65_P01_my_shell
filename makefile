@@ -35,6 +35,10 @@ $(OBJ)/%.o: $(SRC)/%.c $(DEPS)
 run: $(OUTPUT)
 	$(OUTPUT)
 
+# Run the binary
+test: $(OUTPUT)
+	$(OUTPUT) ./scripts/test_script.salsh
+
 # Clean make output
 clean:
 	rm -rf $(BIN)

@@ -41,7 +41,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
             if(strcmp(command->argv[i], ">") == 0)
             {
                 if(command->redir_stdout != SH_STDOUT) status = -1;
-                else status = 1, fd = open(command->argv[i + 1], O_WRONLY | O_EXCL | O_CREAT, 0666);
+                else status = 1, fd = open(command->argv[i + 1], O_WRONLY | O_CREAT, 0666);
             }
 
             else if(strcmp(command->argv[i], ">>") == 0)

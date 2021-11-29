@@ -1,8 +1,8 @@
+#include "script.h"
 #include "shell.h"
 #include "shell_command.h"
 
 #include <stdio.h>
-#include <sys/stat.h>
 
 // Use to check if PID value is a child or not in signal_handler
 static pid_t parent_pid;
@@ -10,8 +10,6 @@ static pid_t parent_pid;
 // Handle SIGINT so that the shell can survive a ctrl+c
 static void signal_handler(int);
 
-// Execute a file like a script
-static void execute_file(char* file);
 
 int main(int argc, char** argv)
 {
@@ -59,45 +57,4 @@ static void signal_handler(int signal) {
         else 
             exit(-1);
     }
-}
-
-/**
- * @brief execute a file as if it were the input to the shell
- * 
- * @param file file to execute
- */
-static void execute_file(char* file)
-{
-    int len;
-    int fd;
-    char* buf = NULL;
-    struct shell_command* command;
-
-    struct stat file_stats;
-    stat(file, &file_stats);
-    len = file_stats.st_size;
-
-    buf = calloc(len + 1, sizeof(char));
-
-    if(!buf) 
-    {
-        fprintf(stderr, SH_PROGRAM_NAME ": error: unable to allocate memory when reading %s\n", file);
-        return;
-    }
-
-    fd = open(file, O_RDONLY);
-
-    if(fd < 0)
-    {
-        fprintf(stderr, SH_PROGRAM_NAME ": error: unable to open %s: %s [%d]\n", file, strerror(errno), errno);
-        return;
-    }
-    
-    read(fd, buf, len);
-
-    command = shell_command_create(buf);
-    shell_execute_commands(command);
-    shell_command_free(command);
-
-    close(fd);
 }

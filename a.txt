@@ -1,0 +1,11 @@
+.git
+.gitignore
+.vscode
+README.md
+a.txt
+b.txt
+bin
+makefile
+obj
+scripts
+src
