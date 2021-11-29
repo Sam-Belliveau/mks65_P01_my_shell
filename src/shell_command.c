@@ -106,6 +106,29 @@ struct shell_command* shell_command_create(char *begin)
                 quote = '\0';
             }
 
+            // If there is a backslash, escape it
+            else if(*end == '\\')
+            {
+                switch(end[1])
+                {
+                    // Escape codes built into the commands
+                    case 'a': end[1] = '\a'; remove_char(end); break;
+                    case 'b': end[1] = '\b'; remove_char(end); break;
+                    case 'f': end[1] = '\f'; remove_char(end); break;
+                    case 'n': end[1] = '\n'; remove_char(end); break;
+                    case 'r': end[1] = '\r'; remove_char(end); break;
+                    case 't': end[1] = '\t'; remove_char(end); break;
+                    case 'v': end[1] = '\v'; remove_char(end); break;
+
+                    // The most common use of backslash is to
+                    // have the next character be ignored by 
+                    // interpretation
+                    default:
+                        remove_char(end);
+                        break;
+                }
+            }
+
             // If your reach a null pointer, 
             // just add everything before it
             else if(*end == '\0')

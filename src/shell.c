@@ -66,10 +66,10 @@ struct shell_command* shell_get_user_line()
  */
 void shell_execute_commands(struct shell_command* command)
 {
-    if(command != NULL)
+    while(command != NULL)
     {
         shell_execute(command);
-        shell_execute_commands(command->next_command);
+        command = command->next_command;
     }
 }
 
@@ -186,12 +186,8 @@ void shell_execute(struct shell_command* command)
         // Have parent wait for child
         else 
         {
-            // Do not wait for child if you do not need to
-            if(command->redir_stdout == SH_STDOUT)
-            {
-                waitpid(f, &status, 0);
-                status = WEXITSTATUS(status);
-            }
+            waitpid(f, &status, 0);
+            status = WEXITSTATUS(status);
         }
 
         // Close all of the outputs opened by the command

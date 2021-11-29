@@ -1,20 +1,25 @@
 
 echo "Running Test Script to tell if shell is working"
 echo ""
-echo "Running 'ls':"
+echo "Running \"ls\":"
 ls
 
 rm a.test
 
 echo ""
 echo ""
-echo "Running 'ls -A > a.test; cat a.test':"
+echo "Running \"ls -A > a.test; cat a.test\":"
 ls -A > a.test; cat a.test
 
 echo ""
 echo ""
-echo "Running 'ls | wc;;;; ; ;    ; ;  ;;; ; ls':"
+echo "Running \"ls | wc;;;; ; ;    ; ;  ;;; ; ls\":"
 ls | wc;;;; ; ;    ; ;  ;;; ; ls
+
+echo ""
+echo ""
+echo "Running 'ls | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | wc':"
+ls | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | cat | wc
 
 echo ""
 echo "Finished Test!"
