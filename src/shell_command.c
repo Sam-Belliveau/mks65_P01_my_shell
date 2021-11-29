@@ -46,7 +46,7 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
             {
             case 0: 
                 break;
-                
+
             case -1:
                 fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
 
@@ -176,11 +176,13 @@ struct shell_command* shell_command_create(char *begin)
             // Delimiters and Command Ends split up commands 
             case ';': case '\n':
                 shell_command_add_argument(command, begin, end);
+                command = shell_command_redirects(command);
                 command->next_command = shell_command_create(end + 1);
                 return shell_command_compact(command);
 
             case '|':
                 shell_command_add_argument(command, begin, end);
+                command = shell_command_redirects(command);
                 command->next_command = shell_command_create(end + 1);
 
                 if(command->next_command != NULL)
