@@ -142,6 +142,9 @@ void shell_execute(struct shell_command* command)
     // fork and run process
     else
     {
+        // Add redirects to the command
+        command = shell_command_add_redirects(command);
+
         // Make copies of standard fds
         t_stdin  = dup(SH_STDIN);
         t_stdout = dup(SH_STDOUT);
@@ -192,9 +195,9 @@ void shell_execute(struct shell_command* command)
         }
 
         // Close all of the outputs opened by the command
-        close(SH_STDIN); close(command->redir_stdin);
-        close(SH_STDOUT); close(command->redir_stdout);
-        close(SH_STDERR); close(command->redir_stderr);
+        close(SH_STDIN);  close(command->redir_stdin);  command->redir_stdin = SH_STDIN;
+        close(SH_STDOUT); close(command->redir_stdout); command->redir_stdout = SH_STDOUT;
+        close(SH_STDERR); close(command->redir_stderr); command->redir_stderr = SH_STDERR;
     
         // Move the outputs back to their place
         dup2(t_stdin,  SH_STDIN);  close(t_stdin);

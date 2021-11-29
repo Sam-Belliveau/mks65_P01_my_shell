@@ -4,10 +4,12 @@ echo ""
 echo "Running 'ls':"
 ls
 
+rm a.test
+
 echo ""
 echo ""
-echo "Running 'ls -A > a.txt; cat a.txt':"
-ls -A > a.txt; cat a.txt
+echo "Running 'ls -A > a.test; cat a.test':"
+ls -A > a.test; cat a.test
 
 echo ""
 echo ""

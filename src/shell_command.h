@@ -26,6 +26,9 @@ struct shell_command
 // Initialize shell command
 struct shell_command* shell_command_create(char *);
 
+// Scan arguments for redirections, and add them to the command
+struct shell_command* shell_command_add_redirects(struct shell_command*);
+
 // Free command and return the next command in the chain
 struct shell_command* shell_command_free_individual(struct shell_command*);
 
