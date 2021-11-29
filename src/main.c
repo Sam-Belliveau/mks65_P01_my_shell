@@ -16,11 +16,11 @@ int main(void)
     parent_pid = getpid();
 
     printf("\n\t " 
-        SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET 
-        " ("SH_COLOR_RED"S"SH_COLOR_RESET"am's "
-            SH_COLOR_RED"A"SH_COLOR_RESET"nd "
-            SH_COLOR_RED"L"SH_COLOR_RESET"ogan's "
-            SH_COLOR_RED"SH"SH_COLOR_RESET"ell) " 
+        SH_COLOR_MAGENTA SH_PROGRAM_NAME SH_COLOR_RESET 
+        " ("SH_COLOR_CYAN"S"SH_COLOR_RESET"am's "
+            SH_COLOR_CYAN"A"SH_COLOR_RESET"nd "
+            SH_COLOR_CYAN"L"SH_COLOR_RESET"ogan's "
+            SH_COLOR_CYAN"SH"SH_COLOR_RESET"ell) " 
             SH_COLOR_GREEN SH_VERSION_NO SH_COLOR_RESET 
     "!\n");
 

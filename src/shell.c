@@ -1,8 +1,21 @@
 #include "shell.h"
 
+// Get the home directory of the user
+static const char* shell_get_home()
+{
+    static const char* home_dir = NULL;
+
+    if(home_dir == NULL) home_dir = getpwuid(getuid())->pw_dir;
+
+    return home_dir;
+}
+
 // Print prompt for users to look at when typing commands
 void shell_print_header()
 {
+    const char* home_dir = shell_get_home();
+    int home_dir_len = strlen(home_dir);
+
     char cwd[SH_CWD_SIZE] = {};
     char usr[SH_USR_SIZE] = {};
 
@@ -11,7 +24,11 @@ void shell_print_header()
 
     fprintf(stderr, SH_COLOR_RESET "\n");
     fprintf(stderr, SH_COLOR_RESET "─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
-    fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+    
+    if(strncmp(cwd, home_dir, home_dir_len) == 0)
+         fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "~%s\n", cwd + home_dir_len);
+    else fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+
     fprintf(stderr, SH_COLOR_RESET "─╯ ");
 }
 
@@ -38,6 +55,7 @@ void shell_execute_commands(struct shell_command* command)
 // Execute a command and handle file descriptors / forking
 void shell_execute(struct shell_command* command)
 {
+    char dir[2 * SH_CWD_SIZE + 2] = {};
     int t_stdin, t_stdout, t_stderr;
     int status, f;
 
@@ -53,10 +71,19 @@ void shell_execute(struct shell_command* command)
             fprintf(stderr, SH_PROGRAM_NAME ": cd: 1 argument required, %d given\n", command->argc - 1);
         } else
         {
-            status = chdir(command->argv[1]);
+            if(strlen(command->argv[1]) >= SH_CWD_SIZE)
+            { fprintf(stderr, SH_PROGRAM_NAME ": cd: length of given directory is too long [SH_CWD_SIZE=%d] \n", SH_CWD_SIZE); }
 
-            // print out error if cd fails
-            if(status) fprintf(stderr, SH_PROGRAM_NAME ": cd: %s [%d]\n", strerror(errno), errno);
+            else
+            {
+                if(command->argv[1][0] == '~') sprintf(dir, "%.*s%.*s", SH_CWD_SIZE, shell_get_home(), SH_CWD_SIZE, command->argv[1] + 1);
+                else sprintf(dir, "%.*s", SH_CWD_SIZE, command->argv[1]);
+
+                status = chdir(dir);
+
+                // print out error if cd fails
+                if(status) fprintf(stderr, SH_PROGRAM_NAME ": cd: %s [%d]\n", strerror(errno), errno);
+            }
         }
     }
 

@@ -9,8 +9,8 @@
 
 #define SH_MAX_ARGS 128
 
-#define SH_CWD_SIZE 256
-#define SH_USR_SIZE 256
+#define SH_CWD_SIZE 4096
+#define SH_USR_SIZE 1024
 
 #define SH_USER_INPUT_BUFFER 2048
 

@@ -5,6 +5,8 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <stdlib.h>
 
