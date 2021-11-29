@@ -44,9 +44,17 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
             // Depending on the status, do different things
             switch (status)
             {
-            case 0: break;
+            case 0: 
+                break;
+                
             case -1:
                 fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
+
+                command->argc -= 2;
+                free(command->argv[i]); remove_word(&command->argv[i]);
+                free(command->argv[i]); remove_word(&command->argv[i]);
+                --i;
+
                 break;
             
             default:
@@ -57,12 +65,13 @@ static struct shell_command* shell_command_redirects(struct shell_command* comma
                 {
                     if(status == 3) command->redir_stdin = fd;
                     else command->redir_stdout = fd;
-
-                    command->argc -= 2;
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    free(command->argv[i]); remove_word(&command->argv[i]);
-                    --i;
                 }
+
+                command->argc -= 2;
+                free(command->argv[i]); remove_word(&command->argv[i]);
+                free(command->argv[i]); remove_word(&command->argv[i]);
+                --i;
+                
                 break;
             }
         }
