@@ -12,7 +12,6 @@ static pid_t parent_pid;
 // Handle SIGINT so that the shell can survive a ctrl+c
 static void signal_handler(int);
 
-
 int main(int argc, char** argv)
 {
     int i;
@@ -41,12 +40,6 @@ int main(int argc, char** argv)
         {
             // Read command from GNU readline
             command_str = shell_readline();
-
-            // if EOF, quit
-            if(command_str == NULL) return 0;
-            
-            // add command to history if its not empty
-            if(command_str[0] != '\0') add_history(command_str);
 
             // execute and free command
             command = shell_command_create(command_str);

@@ -26,6 +26,9 @@ static const char* shell_get_home()
  */
 char* shell_readline()
 {
+    // pointer representing output.
+    char* output;
+
     // create really large buffers
     char prompt[SH_PROMPT_SIZE] = {};
     char cwd[SH_CWD_SIZE] = {};
@@ -40,14 +43,21 @@ char* shell_readline()
     gethostname(usr, SH_USR_SIZE);
 
     // build prompt for GNU readline to use
-    sprintf(prompt, "%s" SH_COLOR_RESET "\n─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", prompt, usr);
+    sprintf(prompt, "%s" SH_COLOR_RESET "\1\n─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s", prompt, usr);
     if(strncmp(cwd, home_dir, home_dir_len) == 0)
-         sprintf(prompt, "%s" SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "~%s\n", prompt, cwd + home_dir_len);
-    else sprintf(prompt, "%s" SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", prompt, cwd);
-    sprintf(prompt, "%s" SH_COLOR_RESET "─╯ ", prompt);
+         sprintf(prompt, "%s" SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "~%s", prompt, cwd + home_dir_len);
+    else sprintf(prompt, "%s" SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "%s", prompt, cwd);
+    sprintf(prompt, "%s" SH_COLOR_RESET "\n─╯ \2", prompt);
 
-    // return the result of GNU readline
-    return readline(prompt);
+    // read the result of GNU readline
+    output = readline(prompt);
+
+    // if EOF, quit / if empty, dont add
+    if(output == NULL) return 0;
+    if(output[0] != '\0') add_history(output);
+
+    // Return the output
+    return output;
 }
 
 /**
