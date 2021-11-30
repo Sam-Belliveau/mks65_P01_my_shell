@@ -12,14 +12,14 @@
 
 #include <errno.h>
 
+#include <readline/readline.h>
+#include <readline/history.h>
+
 #include "constants.h"
 #include "shell_command.h"
 
 // Print prompt for users to look at when typing commands
-void shell_print_header();
-
-// Safely read user input for commands and return a command chain
-struct shell_command* shell_get_user_line();
+const char* shell_print_header();
 
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);

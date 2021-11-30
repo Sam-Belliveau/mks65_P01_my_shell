@@ -32,7 +32,10 @@ void execute_file(char* file)
     }
     
     // read in the script into thr buffer
-    read(fd, buf, file_stats.st_size);
+    if(read(fd, buf, file_stats.st_size) != file_stats.st_size)
+    {
+        fprintf(stderr, SH_PROGRAM_NAME ": warning: detected issues when reading from file %s\n", file);
+    }
 
     // create the command from the buffer and execute it
     command = shell_command_create(buf);

@@ -3,6 +3,8 @@
 #include "shell_command.h"
 
 #include <stdio.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
 // Use to check if PID value is a child or not in signal_handler
 static pid_t parent_pid;
@@ -14,8 +16,11 @@ static void signal_handler(int);
 int main(int argc, char** argv)
 {
     int i;
+    char* command_str;
     struct shell_command* command;
     parent_pid = getpid();
+
+    rl_bind_key('\t', rl_complete);
 
     // If there are no arguments, run the shell prompt
     if(argc == 1)
@@ -34,11 +39,20 @@ int main(int argc, char** argv)
         // Very Simple Shell Loop
         while(1)
         {
-            shell_print_header();
+            // Read command from GNU readline
+            command_str = readline(shell_print_header());
 
-            command = shell_get_user_line();
+            // if EOF, quit
+            if(!command_str) return 0;
+            
+            // otherwise add to history and execute
+            add_history(command_str);
+
+            command = shell_command_create(command_str);
             shell_execute_commands(command);
             shell_command_free(command);
+
+            free(command_str);
         }
     }
 
@@ -49,12 +63,10 @@ int main(int argc, char** argv)
 
 // Handle SIGINT by not closing if it is the parent process
 // and exiting if it is the child. The child usually overwrites this however.
-static void signal_handler(int signal) {
+static void signal_handler(int signal) 
+{
     if(signal == SIGINT)
     {
-        if(getpid() == parent_pid) 
-            fprintf(stderr, "(SIGINT)");
-        else 
-            exit(-1);
+        if(getpid() != parent_pid) exit(-1);
     }
 }

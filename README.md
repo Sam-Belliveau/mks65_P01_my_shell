@@ -41,16 +41,20 @@ There are two ways to test this shell.
 
 12. Support for running scripts when given as arguments to the shell
 
+13. Interactive features such as (GNU Readline):
+    1.  Command History using arrow keys
+    2.  Tab Auto completion
+    3.  Moving cursor back and forth
+
 ---
 
 ### Links
 
 HW Assignment: <https://www.stuycs.org/systems-dw/2021/11/17/p01.html>
 
+---
 
 ### Header Files
-
----
 
 **script.h**
 ```c
@@ -90,10 +94,7 @@ void shell_command_free(struct shell_command*);
 **shell.h**
 ```c
 // Print prompt for users to look at when typing commands
-void shell_print_header();
-
-// Safely read user input for commands and return a command chain
-struct shell_command* shell_get_user_line();
+const char* shell_print_header();
 
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);

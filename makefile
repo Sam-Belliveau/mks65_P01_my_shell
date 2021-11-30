@@ -12,8 +12,8 @@ SRCS=$(wildcard $(SRC)/*.c)
 OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 # Compiler / Compiler Settings
-LINKS=-lm
-FLAGS=-g -D DEBUG_TRAINS
+LINKS=-lm -lreadline
+FLAGS=-O2
 COMPILER=gcc $(FLAGS)
 
 # Command to create directory

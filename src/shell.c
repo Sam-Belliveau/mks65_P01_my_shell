@@ -18,8 +18,10 @@ static const char* shell_get_home()
  * this prompt includes the current directory, 
  * which is simplified if it is in the home directory
  * along with the user and the name of the shell.
+ * 
+ * @return the prompt for GNU readline to use
  */
-void shell_print_header()
+const char* shell_print_header()
 {
     const char* home_dir = shell_get_home();
     int home_dir_len = strlen(home_dir);
@@ -27,34 +29,18 @@ void shell_print_header()
     char cwd[SH_CWD_SIZE] = {};
     char usr[SH_USR_SIZE] = {};
 
-    getcwd(cwd, SH_CWD_SIZE);
+    if(getcwd(cwd, SH_CWD_SIZE));
     gethostname(usr, SH_USR_SIZE);
 
     fprintf(stderr, SH_COLOR_RESET "\n");
-    fprintf(stderr, SH_COLOR_RESET "─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
+    fprintf(stderr, SH_COLOR_RESET " ────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
     
     if(strncmp(cwd, home_dir, home_dir_len) == 0)
-         fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "~%s\n", cwd + home_dir_len);
-    else fprintf(stderr, SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", cwd);
+         fprintf(stderr, SH_COLOR_RESET "╭────╯ " SH_COLOR_BLUE "~%s\n", cwd + home_dir_len);
+    else fprintf(stderr, SH_COLOR_RESET "╭────╯ " SH_COLOR_BLUE "%s\n", cwd);
 
-    fprintf(stderr, SH_COLOR_RESET "─╯ ");
-}
-
-/**
- * @brief create a shell_command from stdin
- * 
- *  1) safely read characters from stdin into a buffer
- *  2) parse them into a shell_command struct
- * 
- * @return the parsed command
- */
-struct shell_command* shell_get_user_line()
-{
-    char buf[SH_USER_INPUT_BUFFER + 1] = {};
-
-    fgets(buf, SH_USER_INPUT_BUFFER, stdin);
-
-    return shell_command_create(buf);
+    // The last line is passed to GNU readline
+    return SH_COLOR_RESET "╰─ ";
 }
 
 /**
