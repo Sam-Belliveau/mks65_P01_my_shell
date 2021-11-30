@@ -19,20 +19,14 @@ static const char* shell_get_home()
  * which is simplified if it is in the home directory
  * along with the user and the name of the shell.
  * 
- * it uses GNU readline to read the input form the user,
- * allowing for interactive features
- * 
  * @return the input that the user has typed
  */
-char* shell_readline()
+struct shell_command* shell_readline()
 {
-    // pointer representing output.
-    char* output;
-
     // create really large buffers
-    char prompt[SH_PROMPT_SIZE] = {};
     char cwd[SH_CWD_SIZE] = {};
     char usr[SH_USR_SIZE] = {};
+    char line[SH_USER_INPUT_BUFFER] = {};
 
     // get information about home directory
     const char* home_dir = shell_get_home();
@@ -42,22 +36,18 @@ char* shell_readline()
     if(getcwd(cwd, SH_CWD_SIZE));
     gethostname(usr, SH_USR_SIZE);
 
-    // build prompt for GNU readline to use
-    sprintf(prompt, "%s" SH_COLOR_RESET "\1\n─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s", prompt, usr);
+    // build prompt for user
+    fprintf(stderr, SH_COLOR_RESET "\n─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s", usr);
     if(strncmp(cwd, home_dir, home_dir_len) == 0)
-         sprintf(prompt, "%s" SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "~%s", prompt, cwd + home_dir_len);
-    else sprintf(prompt, "%s" SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "%s", prompt, cwd);
-    sprintf(prompt, "%s" SH_COLOR_RESET "\n─╯ \2", prompt);
+         fprintf(stderr, SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "~%s", cwd + home_dir_len);
+    else fprintf(stderr, SH_COLOR_RESET "\n ╭───╯ " SH_COLOR_BLUE "%s", cwd);
+    fprintf(stderr, SH_COLOR_RESET "\n─╯ ");
 
-    // read the result of GNU readline
-    output = readline(prompt);
+    // read input from user
+    fgets(line, SH_USER_INPUT_BUFFER, stdin);
 
-    // if EOF, quit / if empty, dont add
-    if(output == NULL) return 0;
-    if(output[0] != '\0') add_history(output);
-
-    // Return the output
-    return output;
+    // return command created from line
+    return shell_command_create(line);
 }
 
 /**

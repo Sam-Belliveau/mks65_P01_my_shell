@@ -12,14 +12,11 @@
 
 #include <errno.h>
 
-#include <readline/readline.h>
-#include <readline/history.h>
-
 #include "constants.h"
 #include "shell_command.h"
 
 // Print prompt and reads user input
-char* shell_readline();
+struct shell_command* shell_readline();
 
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);

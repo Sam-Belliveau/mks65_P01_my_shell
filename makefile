@@ -12,7 +12,7 @@ SRCS=$(wildcard $(SRC)/*.c)
 OBJS=$(patsubst $(SRC)/%.c, $(OBJ)/%.o, $(SRCS))
 
 # Compiler / Compiler Settings
-LINKS=-lm -lreadline
+LINKS=-lm
 FLAGS=-O2
 COMPILER=gcc $(FLAGS)
 

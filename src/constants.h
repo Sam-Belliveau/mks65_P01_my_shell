@@ -9,7 +9,6 @@
 
 #define SH_CWD_SIZE (1 << 12)
 #define SH_USR_SIZE (1 << 10)
-#define SH_PROMPT_SIZE (1 << 13)
 
 #define SH_USER_INPUT_BUFFER (1 << 12)
 

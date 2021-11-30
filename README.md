@@ -41,14 +41,6 @@ There are two ways to test this shell.
 
 12. Support for running scripts when given as arguments to the shell
 
-13. Interactive features such as (GNU Readline):
-
-    1.  Command History using arrow keys
-
-    2.  Tab Auto completion
-
-    3.  Moving cursor back and forth
-
 ---
 
 ### Links

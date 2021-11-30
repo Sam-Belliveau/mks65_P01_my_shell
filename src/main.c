@@ -3,8 +3,6 @@
 #include "shell_command.h"
 
 #include <stdio.h>
-#include <readline/readline.h>
-#include <readline/history.h>
 
 // Use to check if PID value is a child or not in signal_handler
 static pid_t parent_pid;
@@ -18,8 +16,6 @@ int main(int argc, char** argv)
     char* command_str;
     struct shell_command* command;
     parent_pid = getpid();
-
-    rl_bind_key('\t', rl_complete);
 
     // If there are no arguments, run the shell prompt
     if(argc == 1)
@@ -39,10 +35,8 @@ int main(int argc, char** argv)
         while(1)
         {
             // Read command from GNU readline
-            command_str = shell_readline();
-
-            // execute and free command
-            command = shell_command_create(command_str);
+            command = shell_readline();
+            
             shell_execute_commands(command);
             shell_command_free(command);
             free(command_str);
