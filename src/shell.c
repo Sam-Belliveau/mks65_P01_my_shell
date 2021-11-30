@@ -13,34 +13,39 @@ static const char* shell_get_home()
 }
 
 /**
- * @brief Display a prompt for the user to type into.
+ * @brief Display a prompt for the user to type into and reads data
  * 
  * this prompt includes the current directory, 
  * which is simplified if it is in the home directory
  * along with the user and the name of the shell.
  * 
- * @return the prompt for GNU readline to use
+ * it uses GNU readline to read the input form the user,
+ * allowing for interactive features
+ * 
+ * @return the input that the user has typed
  */
-const char* shell_print_header()
+char* shell_readline()
 {
     const char* home_dir = shell_get_home();
     int home_dir_len = strlen(home_dir);
 
     char cwd[SH_CWD_SIZE] = {};
     char usr[SH_USR_SIZE] = {};
+    char header[SH_HEADER_SIZE] = {};
 
     if(getcwd(cwd, SH_CWD_SIZE));
     gethostname(usr, SH_USR_SIZE);
 
-    fprintf(stderr, SH_COLOR_RESET "\n");
-    fprintf(stderr, SH_COLOR_RESET " ────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", usr);
+    sprintf(header, "%s" SH_COLOR_RESET "\n─────╮ " SH_COLOR_RED SH_PROGRAM_NAME SH_COLOR_RESET " : " SH_COLOR_GREEN "%s\n", header, usr);
     
     if(strncmp(cwd, home_dir, home_dir_len) == 0)
-         fprintf(stderr, SH_COLOR_RESET "╭────╯ " SH_COLOR_BLUE "~%s\n", cwd + home_dir_len);
-    else fprintf(stderr, SH_COLOR_RESET "╭────╯ " SH_COLOR_BLUE "%s\n", cwd);
+         sprintf(header, "%s" SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "~%s\n", header, cwd + home_dir_len);
+    else sprintf(header, "%s" SH_COLOR_RESET " ╭───╯ " SH_COLOR_BLUE "%s\n", header, cwd);
 
     // The last line is passed to GNU readline
-    return SH_COLOR_RESET "╰─ ";
+    sprintf(header, "%s" SH_COLOR_RESET "─╯ ", header);
+
+    return readline(header);
 }
 
 /**

@@ -40,18 +40,18 @@ int main(int argc, char** argv)
         while(1)
         {
             // Read command from GNU readline
-            command_str = readline(shell_print_header());
+            command_str = shell_readline();
 
             // if EOF, quit
-            if(!command_str) return 0;
+            if(command_str == NULL) return 0;
             
-            // otherwise add to history and execute
-            add_history(command_str);
+            // add command to history if its not empty
+            if(command_str[0] != '\0') add_history(command_str);
 
+            // execute and free command
             command = shell_command_create(command_str);
             shell_execute_commands(command);
             shell_command_free(command);
-
             free(command_str);
         }
     }
@@ -66,7 +66,5 @@ int main(int argc, char** argv)
 static void signal_handler(int signal) 
 {
     if(signal == SIGINT)
-    {
-        if(getpid() != parent_pid) exit(-1);
-    }
+    { if(getpid() != parent_pid) exit(-1); }
 }

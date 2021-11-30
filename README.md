@@ -42,8 +42,11 @@ There are two ways to test this shell.
 12. Support for running scripts when given as arguments to the shell
 
 13. Interactive features such as (GNU Readline):
+
     1.  Command History using arrow keys
+
     2.  Tab Auto completion
+
     3.  Moving cursor back and forth
 
 ---
@@ -93,8 +96,8 @@ void shell_command_free(struct shell_command*);
 
 **shell.h**
 ```c
-// Print prompt for users to look at when typing commands
-const char* shell_print_header();
+// Print prompt and reads user input
+char* shell_readline();
 
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);
@@ -113,6 +116,7 @@ void shell_execute(struct shell_command*);
 
 #define SH_CWD_SIZE (1 << 12)
 #define SH_USR_SIZE (1 << 10)
+#define SH_HEADER_SIZE (1 << 13)
 
 #define SH_USER_INPUT_BUFFER (1 << 12)
 

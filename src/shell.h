@@ -18,8 +18,8 @@
 #include "constants.h"
 #include "shell_command.h"
 
-// Print prompt for users to look at when typing commands
-const char* shell_print_header();
+// Print prompt and reads user input
+char* shell_readline();
 
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);
