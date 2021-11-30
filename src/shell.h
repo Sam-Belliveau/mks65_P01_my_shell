@@ -24,7 +24,7 @@ struct shell_command* shell_get_user_line();
 // Execute every command in the chain
 void shell_execute_commands(struct shell_command*);
 
-// Execute a command and handle file descriptors / forking
+// Execute a single command and handle file descriptors / forking
 void shell_execute(struct shell_command*);
 
 #endif

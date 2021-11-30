@@ -1,8 +1,6 @@
 #ifndef SHELL_CONSTANTS_HEADER_FILE
 #define SHELL_CONSTANTS_HEADER_FILE
 
-#include <stdio.h>
-
 #define SH_PROGRAM_NAME "SALSH"
 
 #define SH_VERSION_NO "v2.0.1"
