@@ -231,8 +231,8 @@ struct shell_command* shell_command_create(char *begin)
  */
 struct shell_command* shell_command_add_redirects(struct shell_command* command)
 {
-    char** j;
-    int i, status, fd;
+    int i;
+    int status, fd;
 
     if(command)
     {
