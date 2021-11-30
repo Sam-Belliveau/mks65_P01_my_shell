@@ -1,5 +1,5 @@
 
-echo "Running Test Script to tell if shell is working"
+echo "\n\nRunning Test Script to tell if the shell is working"
 echo ""
 echo "Running \"ls\":"
 ls

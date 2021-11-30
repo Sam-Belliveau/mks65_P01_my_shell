@@ -80,7 +80,7 @@ struct shell_command* shell_command_create(char *begin)
 
     if(command == NULL)
     {
-        fprintf(stderr, SH_PROGRAM_NAME ": fatal error allocating memory! exiting...\n");
+        fprintf(stderr, SH_PROGRAM_NAME ": fatal error: unable to allocate memory. exiting...\n");
         exit(-1);
     }
 
@@ -119,13 +119,7 @@ struct shell_command* shell_command_create(char *begin)
                     case 'r': end[1] = '\r'; remove_char(end); break;
                     case 't': end[1] = '\t'; remove_char(end); break;
                     case 'v': end[1] = '\v'; remove_char(end); break;
-
-                    // The most common use of backslash is to
-                    // have the next character be ignored by 
-                    // interpretation
-                    default:
-                        remove_char(end);
-                        break;
+                    default: remove_char(end); break;
                 }
             }
 
@@ -159,28 +153,21 @@ struct shell_command* shell_command_create(char *begin)
 
                 if(command->next_command != NULL)
                 {
-                    if(command->next_command->redir_stdin != SH_STDIN)
+                    pipe_status = pipe(fds);
+
+                    if(pipe_status < 0) 
                     {
-                        fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
+                        fprintf(stderr, SH_PROGRAM_NAME ": error: unable to pipe %s to %s: %s [%d]\n", command->argv[0], command->next_command->argv[0], strerror(errno), errno);
                     }
                     else
                     {
-                        pipe_status = pipe(fds);
-
-                        if(pipe_status < 0) 
-                        {
-                            fprintf(stderr, SH_PROGRAM_NAME ": Error when piping %s to %s: %s [%d]\n", command->argv[0], command->next_command->argv[0], strerror(errno), errno);
-                        }
-                        else
-                        {
-                            command->redir_stdout = fds[1];
-                            command->next_command->redir_stdin = fds[0];
-                        }
+                        command->redir_stdout = fds[1];
+                        command->next_command->redir_stdin = fds[0];
                     }
                 }
                 else
                 {
-                    fprintf(stderr, SH_PROGRAM_NAME ": warning: unable to pipe into undefined command\n");
+                    fprintf(stderr, SH_PROGRAM_NAME ": error: unable to pipe %s to (NULL COMMAND)\n", command->argv[0]);
                 }
 
                 return command;
@@ -224,13 +211,7 @@ struct shell_command* shell_command_create(char *begin)
                     case 'r': end[1] = '\r'; remove_char(end); break;
                     case 't': end[1] = '\t'; remove_char(end); break;
                     case 'v': end[1] = '\v'; remove_char(end); break;
-
-                    // The most common use of backslash is to
-                    // have the next character be ignored by 
-                    // interpretation
-                    default:
-                        remove_char(end);
-                        break;
+                    default: remove_char(end); break;
                 }
                 break;
 
@@ -286,7 +267,7 @@ struct shell_command* shell_command_add_redirects(struct shell_command* command)
                 break;
 
             case -1:
-                fprintf(stderr, SH_PROGRAM_NAME ": warning: multiple redirects / pipes are not supported\n");
+                fprintf(stderr, SH_PROGRAM_NAME ": error: unable to redirect %s: command already redirected / piped\n", command->argv[i + 1]);
 
                 command->argc -= 2;
                 free(command->argv[i]); remove_word(&command->argv[i]);
@@ -298,7 +279,7 @@ struct shell_command* shell_command_add_redirects(struct shell_command* command)
             default:
                 if(fd < 0)
                 {
-                    fprintf(stderr, SH_PROGRAM_NAME ": unable to redirect %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
+                    fprintf(stderr, SH_PROGRAM_NAME ": error: unable to redirect %s: %s [%d]\n", command->argv[i + 1], strerror(errno), errno);
                 } else
                 {
                     if(status == 3) command->redir_stdin = fd;
@@ -342,6 +323,10 @@ struct shell_command* shell_command_free_individual(struct shell_command* comman
     {
         next_command = command->next_command;
         
+        safe_close(command->redir_stdin, SH_STDIN);
+        safe_close(command->redir_stdout, SH_STDOUT);
+        safe_close(command->redir_stderr, SH_STDERR);
+
         for(i = 0; i < SH_MAX_ARGS; ++i)
             free(command->argv[i]);
 

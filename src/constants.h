@@ -31,4 +31,8 @@
 #define SH_COLOR_WHITE "\x001b[37m"
 #define SH_COLOR_RESET "\x001b[0m"
 
+// Close a file descriptor and set it to the default,
+// but only close the file descriptor if it does not equal default
+#define safe_close(fd, tfd) do { if((fd) != (tfd)) { close(fd); fd = tfd; }} while(0)
+
 #endif
