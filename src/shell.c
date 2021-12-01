@@ -44,7 +44,11 @@ struct shell_command* shell_readline()
     fprintf(stderr, SH_COLOR_RESET "\n─╯ ");
 
     // read input from user
-    fgets(line, SH_USER_INPUT_BUFFER, stdin);
+    if(fgets(line, SH_USER_INPUT_BUFFER, stdin) == NULL) 
+    {
+        fprintf(stderr, SH_PROGRAM_NAME ": warning: unable to read input from stdin\n");
+        return NULL;
+    }
 
     // return command created from line
     return shell_command_create(line);

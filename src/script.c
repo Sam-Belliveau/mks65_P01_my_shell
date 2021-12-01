@@ -16,10 +16,10 @@ void execute_file(char* file)
     stat(file, &file_stats);
     buf = calloc(file_stats.st_size + 1, sizeof(char));
 
-    if(!buf) 
+    if(buf == NULL) 
     {
-        fprintf(stderr, SH_PROGRAM_NAME ": error: unable to allocate memory when reading %s\n", file);
-        return;
+        fprintf(stderr, SH_PROGRAM_NAME ": fatal error: unable to allocate memory. exiting...\n");
+        exit(-1);
     }
 
     // open the file that you want to read
@@ -34,7 +34,8 @@ void execute_file(char* file)
     // read in the script into thr buffer
     if(read(fd, buf, file_stats.st_size) != file_stats.st_size)
     {
-        fprintf(stderr, SH_PROGRAM_NAME ": warning: detected issues when reading from file %s\n", file);
+        fprintf(stderr, SH_PROGRAM_NAME ": error: unable to read %s: file is likely too large\n", file);
+        return;
     }
 
     // create the command from the buffer and execute it

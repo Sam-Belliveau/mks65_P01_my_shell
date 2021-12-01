@@ -47,6 +47,13 @@ static void shell_command_add_argument(struct shell_command* command, char* begi
         {
             // Copy buffer into command
             buf = calloc(size + 1, sizeof(char));
+
+            if(buf == NULL)
+            {
+                fprintf(stderr, SH_PROGRAM_NAME ": fatal error: unable to allocate memory. exiting...\n");
+                exit(-1);
+            }
+
             strncpy(buf, begin, size);
             command->argv[command->argc++] = buf;
         }
